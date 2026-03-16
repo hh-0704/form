@@ -44,28 +44,6 @@
 
 ---
 
-## 프로젝트 구조
-
-```
-src
-└── main
-    ├── java/hello/itemservice
-    │   ├── ItemServiceApplication.java     # 애플리케이션 진입점
-    │   ├── TestDataInit.java               # 테스트용 초기 데이터 설정
-    │   ├── domain/item
-    │   │   ├── Item.java                   # 상품 도메인 객체
-    │   │   └── ItemRepository.java         # 상품 저장소 (메모리)
-    │   └── web/form
-    │       └── FormItemController.java     # 폼 처리 컨트롤러
-    └── resources
-        └── templates/form
-            ├── items.html                  # 상품 목록
-            ├── item.html                   # 상품 상세
-            ├── addForm.html                # 상품 등록 폼
-            └── editForm.html               # 상품 수정 폼
-```
-
----
 
 ## 핵심 학습 내용
 
@@ -136,18 +114,4 @@ Enum을 활용해 라디오 버튼 목록을 구성합니다.
             th:value="${deliveryCode.code}"
             th:text="${deliveryCode.displayName}"></option>
 </select>
-```
-
----
-
-## 실행 방법
-
-```bash
-./gradlew bootRun
-```
-
-실행 후 브라우저에서 확인:
-
-```
-http://localhost:8080/form/items
 ```
