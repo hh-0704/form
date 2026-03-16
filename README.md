@@ -1,14 +1,33 @@
-# 스프링 MVC 2편 - 섹션 3. 메시지, 국제화
+# 스프링 MVC 2편 - 섹션 3. 타임리프 - 스프링 통합과 폼
 
-> 김영한의 [스프링 MVC 2편 - 백엔드 웹 개발 활용 기술](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-mvc-2) 강의 **섹션 3**을 따라 실습한 프로젝트입니다.
+> 김영한의 [스프링 MVC 2편 - 백엔드 웹 개발 활용 기술](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-mvc-2) 강의 **섹션 3 (강의 23~32)**을 따라 실습한 프로젝트입니다.
+
+---
+
+## 강의 목차
+
+| 강의 | 제목 |
+|------|------|
+| 23 | 프로젝트 설정 |
+| 24 | 타임리프 스프링 통합 |
+| 25 | 입력 폼 처리 |
+| 26 | 요구사항 추가 |
+| 27 | 체크 박스 - 단일1 |
+| 28 | 체크 박스 - 단일2 |
+| 29 | 체크 박스 - 멀티 |
+| 30 | 라디오 버튼 |
+| 31 | 셀렉트 박스 |
+| 32 | 정리 |
 
 ---
 
 ## 학습 목표
 
-- Thymeleaf의 `th:field`, `th:object`를 활용한 폼 처리 방법 이해
-- `@ModelAttribute`를 이용한 폼 데이터 바인딩
-- `RedirectAttributes`를 활용한 리다이렉트 후 메시지 전달
+- 타임리프와 스프링의 통합 기능 이해 (`th:object`, `th:field`)
+- 입력 폼 처리 및 `@ModelAttribute` 바인딩
+- 체크박스 단일/멀티 처리 방법 (`th:field` + `hidden` 필드 활용)
+- 라디오 버튼 및 셀렉트 박스 처리
+- `@ModelAttribute`를 이용한 폼 공통 데이터(Enum, 리스트) 자동 모델 추가
 - PRG(Post-Redirect-Get) 패턴 적용
 
 ---
@@ -50,10 +69,10 @@ src
 
 ## 핵심 학습 내용
 
-### 1. `th:object` / `th:field` 활용
+### 1. 타임리프 스프링 통합 - `th:object` / `th:field`
 
-폼에서 `th:object`로 모델 객체를 바인딩하고, `th:field`로 각 필드를 연결합니다.  
-`th:field`는 `id`, `name`, `value` 속성을 자동으로 처리해줍니다.
+`th:object`로 모델 객체를 지정하고, `th:field`로 각 필드를 연결합니다.  
+`th:field`는 `id`, `name`, `value` 속성을 자동으로 생성해줍니다.
 
 ```html
 <form th:action method="post" th:object="${item}">
@@ -63,24 +82,61 @@ src
 </form>
 ```
 
-### 2. `@ModelAttribute`로 폼 데이터 바인딩
+### 2. 체크박스 - 단일
 
-폼 submit 시 요청 파라미터를 자동으로 객체에 바인딩합니다.
+HTML 체크박스는 체크하지 않으면 값이 서버로 전송되지 않는 문제가 있습니다.  
+타임리프의 `th:field`를 사용하면 히든 필드(`_open`)를 자동으로 생성해 이 문제를 해결합니다.
+
+```html
+<input type="checkbox" th:field="*{open}">
+```
+
+### 3. 체크박스 - 멀티
+
+`@ModelAttribute`를 활용해 체크박스 목록을 모든 컨트롤러에 자동으로 전달하고,  
+`th:each`로 반복 렌더링합니다.
 
 ```java
-@PostMapping("/add")
-public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes) {
-    Item savedItem = itemRepository.save(item);
-    redirectAttributes.addAttribute("itemId", savedItem.getId());
-    redirectAttributes.addAttribute("status", true);
-    return "redirect:/form/items/{itemId}";
+@ModelAttribute("regions")
+public Map<String, String> regions() {
+    Map<String, String> regions = new LinkedHashMap<>();
+    regions.put("SEOUL", "서울");
+    regions.put("BUSAN", "부산");
+    regions.put("JEJU", "제주");
+    return regions;
 }
 ```
 
-### 3. PRG (Post-Redirect-Get) 패턴
+```html
+<div th:each="region : ${regions}">
+    <input type="checkbox" th:field="*{regions}" th:value="${region.key}">
+    <label th:text="${region.value}"></label>
+</div>
+```
 
-폼 submit 후 새로고침 시 중복 등록을 방지하기 위해 POST 이후 리다이렉트를 적용합니다.  
-`RedirectAttributes`로 리다이렉트 URL에 파라미터를 안전하게 전달합니다.
+### 4. 라디오 버튼
+
+Enum을 활용해 라디오 버튼 목록을 구성합니다.
+
+```html
+<div th:each="type : ${itemTypes}">
+    <input type="radio" th:field="*{itemType}" th:value="${type.name()}">
+    <label th:text="${type.description}"></label>
+</div>
+```
+
+### 5. 셀렉트 박스
+
+`th:each`로 옵션을 렌더링하고, `th:field`로 선택값을 자동 처리합니다.
+
+```html
+<select th:field="*{deliveryCode}">
+    <option value="">==배송 방식 선택==</option>
+    <option th:each="deliveryCode : ${deliveryCodes}"
+            th:value="${deliveryCode.code}"
+            th:text="${deliveryCode.displayName}"></option>
+</select>
+```
 
 ---
 
